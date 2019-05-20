@@ -29,7 +29,7 @@ app.use(function (req, res, next) {
     // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
- 
+
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -43,34 +43,27 @@ app.use('/chat', chatCtrl);
 
 
 //----upload file
-app.post("/upload", multer({dest: "./uploads/"}).array("uploads", 12), function(request, res) {
-    const req = request.body
-    if(true){
-        fs.writeFile('./uploads/'+ req.name, decodeBase64Image(req.name,req.data), 'base64', function(err) {
-            console.log(err);
-   });
-   
-    }
-  
-function decodeBase64Image(name,dataString) {
-    var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
-      response = {};
-   
-    if (matches.length !== 3) {
-      return new Error('Invalid input string');
-    }
-    response.type = matches[1];
-    response.data = new Buffer(matches[2], 'base64');
-    res.send({
-        response:"Success",
-        link:"http://localhost:3000/" + name
-    })
+// app.post("/upload", multer({ dest: "./uploads/" }).array("uploads", 12), function (request, res) {
+//     const req = request.body
+//     if (true) {
+//         fs.writeFile('./uploads/' + req.name, decodeBase64Image(req.name, req.data), 'base64', function (err) {
+//             console.log(err);
+//         });
+//     }
+// })
+
+
+function uploadFile(name, dataString) {
+    fs.writeFile('./uploads/' + name, decodeBase64Image(dataString), 'base64', function (err) {
+        console.log(err);
+    });
+}
+
+function decodeBase64Image(dataString) {
+    let response = {};
+    response.data = new Buffer(dataString, 'base64');
     return response.data;
-  }
-  
-
-});
-
+}
 //---socket
 var port = process.env.PORT || 3000;
 var server = app.listen(port, function () {
@@ -79,6 +72,7 @@ var server = app.listen(port, function () {
 var io = require('socket.io').listen(server);
 
 let users = [];
+
 //============SOCKET================
 io.on('connection', function (socket) {
 
@@ -134,7 +128,7 @@ io.on('connection', function (socket) {
                     res.end('View error log on server console');
                 })
         });
-        Promise.all(promises).then(function(results) {
+        Promise.all(promises).then(function (results) {
             console.log('results', results);
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
@@ -149,57 +143,18 @@ io.on('connection', function (socket) {
                 io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
             })
         })
-        
+
+        if (message.type === 5) {
+            uploadFile(message.filename, message.content);
+            message['link'] = "http://localhost:3000/" + message.filename;
+            console.log('message file', message);
+        }
+
         receiverIds.map(receiverId => {
             let receiver = users.filter(user => user.userId + '' === receiverId)[0];
             //Gửi tin nhắn đến client
             io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg);
         })
-        // chatRepo.insertMessage(msg)
-        //     .then(value => {
-        //         console.log(value);
-        //         var topic = {
-        //             LastMessageSendTime: msg.SendTime,
-        //             TopicID: msg.TopicID,
-        //             id: msg.TopicID,
-        //             VisitorName: msg.VisitorName ? msg.VisitorName : msg.SenderID,
-        //             UnreadMessageCount: 0,
-        //             ServicerID: msg.ServicerID ? msg.ServicerID : null,
-        //             CompanyID: msg.CompanyID
-        //         }
-        //         //------kiểm tra topic có tổn tại?-------
-        //         chatRepo.getTopicInfo(topic)
-        //             .then(value => {
-        //                 console.log('getTopic', value[0]);
-        //                 //-----CÓ: update
-        //                 if (value[0] != undefined) {
-        //                     chatRepo.updateTopic(topic)
-        //                         .then(value => {
-        //                             console.log('updateTopic', value);
-        //                             // io.emit('chat message', msg);
-        //                         })
-        //                         .catch(error => {
-        //                             console.log(error);
-        //                         })
-        //                     //-----KHÔNG: insert
-        //                 } else {
-        //                     chatRepo.insertTopic(topic)
-        //                         .then(value => {
-        //                             console.log('insertTopic', value);
-        //                             // io.emit('chat message', msg);
-        //                         })
-        //                         .catch(error => {
-        //                             console.log(error);
-        //                         })
-        //                 }
-        //             })
-        //             .catch(error => {
-        //                 console.log(error);
-        //             })
-        //     })
-        //     .catch((error) => {
-        //         console.log(error);
-        //     });
     });
 })
 
