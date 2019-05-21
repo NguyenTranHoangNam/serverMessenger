@@ -12,6 +12,7 @@ var fs = require("fs");
 var express = require('express')
 var app = express();
 var bodyParser = require('body-parser');
+const path = require('path');
 
 //---app
 app.use(bodyParser.json());
@@ -40,6 +41,15 @@ app.use(function (req, res, next) {
 
 app.use('/user', userCtrl);
 app.use('/chat', chatCtrl);
+
+// define a route to download a file 
+app.get('/download/:file(*)',(req, res) => {
+    console.log(req);
+    var file = req.params.file;
+    var fileLocation = path.join('./uploads',file);
+    console.log(fileLocation);
+    res.download(fileLocation, file); 
+});
 
 
 //----upload file
@@ -133,9 +143,16 @@ io.on('connection', function (socket) {
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
                 //Gửi topic đến client
+                let lastMess = message.content;
+                if (message.type === 5){
+                    lastMess = "Tập tin";
+                }
+                if (message.type === 2){
+                    lastMess = "Hình ảnh"
+                }
                 let topic = {
                     name: results,
-                    lastMess: message.content,
+                    lastMess: lastMess,
                     sendTime: message.sendTime,
                     topicId: message.topicId,
                     hasNewMessage: true
@@ -146,14 +163,21 @@ io.on('connection', function (socket) {
 
         if (message.type === 5) {
             uploadFile(message.filename, message.content);
-            message['link'] = "http://localhost:3000/" + message.filename;
+            message.content = "";
             console.log('message file', message);
+        }
+        if (message.type === 2) {
+            let photoName = new Date().getTime().toString() + ".jpg";
+            uploadFile(photoName, message.content);
+            message.content = "";
+            message['photoURL'] = "http://localhost:3000/" + photoName;
+            console.log('message photo', message);
         }
 
         receiverIds.map(receiverId => {
             let receiver = users.filter(user => user.userId + '' === receiverId)[0];
             //Gửi tin nhắn đến client
-            io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg);
+            io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg, message.type);
         })
     });
 })
