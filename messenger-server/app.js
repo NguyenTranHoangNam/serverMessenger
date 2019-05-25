@@ -171,7 +171,7 @@ io.on('connection', function (socket) {
                     lastMess: lastMess,
                     sendTime: message.sendTime,
                     topicId: message.topicId,
-                    hasNewMessage: true
+                    hasNewMessage: 1
                 }
                 try {   
                     topic.name = JSON.parse(topic.name);
