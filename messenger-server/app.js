@@ -167,13 +167,14 @@ io.on('connection', function (socket) {
                     lastMess = "Hình ảnh"
                 }
                 let topic = {
-                    name: results,
+                    name: JSON.stringify(results),
                     lastMess: lastMess,
                     sendTime: message.sendTime,
                     topicId: message.topicId,
                     hasNewMessage: true
                 }
                 try {   
+                    topic.name = JSON.parse(topic.name);
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
                     console.log('TOPIC_FROM_SERVER', error) 
