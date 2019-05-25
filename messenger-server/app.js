@@ -157,7 +157,11 @@ io.on('connection', function (socket) {
                     topicId: message.topicId,
                     hasNewMessage: true
                 }
-                io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
+                try {   
+                    io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
+                } catch (error) {
+                    console.log('TOPIC_FROM_SERVER', error) 
+                }
             })
         })
 
@@ -177,7 +181,11 @@ io.on('connection', function (socket) {
         receiverIds.map(receiverId => {
             let receiver = users.filter(user => user.userId + '' === receiverId)[0];
             //Gửi tin nhắn đến client
-            io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg, message.type);
+            try {     
+                io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg, message.type);
+            } catch (error) {
+                console.log('MESSAGE_FROM_SERVER', error) 
+            }
         })
     });
 })
