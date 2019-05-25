@@ -56,9 +56,9 @@ app.post('/getTopicByUserID',(req,res)=>{
     const body = req.body
     if(body.userID != null){
         chatRepo.getTopicByUserID(body.userID).then(response=>{
-            // response.map(topic=>{
-            //      JSON.parse(topic)
-            // })
+            response.map(topic=>{
+                topic.name = JSON.parse(topic.name)
+            })
             res.send({response:(response)})
         })
     }
