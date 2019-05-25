@@ -51,6 +51,22 @@ app.get('/download/:file(*)',(req, res) => {
     res.download(fileLocation, file); 
 });
 
+//-----get Topic by userID
+app.post('/getTopicByUserID',(req,res)=>{
+    const body = req.body
+    if(body.userID != null){
+        chatRepo.getTopicByUserID(body.userID).then(response=>{
+            // response.map(topic=>{
+            //      JSON.parse(topic)
+            // })
+            res.send({response:(response)})
+        })
+    }
+    else{
+        res.send({error:'userID is null'})
+    }
+
+});
 
 //----upload file
 // app.post("/upload", multer({ dest: "./uploads/" }).array("uploads", 12), function (request, res) {

@@ -19,3 +19,8 @@ exports.insertMessage = function(message){
     var sql = `insert into message(topicId, sendTime, status, senderId, content) values('${message.topicId}', '${message.sendTime}', '1', '${message.senderId}', '${message.content}', )`;
     return db.write(sql);
 }
+
+exports.getTopicByUserID = function(userId){
+    var sql = `select * from topic t where t.topicId like '%${userId}%'`
+	return db.load(sql);
+}
