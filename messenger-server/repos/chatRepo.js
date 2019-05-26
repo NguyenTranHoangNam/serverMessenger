@@ -24,3 +24,8 @@ exports.getTopicByUserID = function(userId){
     var sql = `select * from topic t where t.topicId like '%${userId}%'`
 	return db.load(sql);
 }
+
+exports.getMessageByTopicID = function(topicId){
+    var sql = `SELECT * from message m where m.topicId = '${topicId}'`
+	return db.load(sql);
+}

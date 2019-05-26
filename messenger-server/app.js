@@ -67,7 +67,24 @@ app.post('/getTopicByUserID',(req,res)=>{
     }
 
 });
+//-----get Message by TopicID
+app.post('/getMessageByTopicID',(req,res)=>{
+    const body = req.body
+    if(body.topicID != null){
+        console.log(body)
+        chatRepo.getMessageByTopicID(body.topicID).then(response=>{
 
+            // response.map(topic=>{
+            //     topic.name = JSON.parse(topic.name)
+            // })
+            res.send({response:(response)})
+        })
+    }
+    else{
+        res.send({error:'topicID is null'})
+    }
+
+});
 //----upload file
 // app.post("/upload", multer({ dest: "./uploads/" }).array("uploads", 12), function (request, res) {
 //     const req = request.body
