@@ -155,7 +155,7 @@ io.on('connection', function (socket) {
         //Nhận tin nhắn từ client
         console.log('message from user: ', message);
         let oReceiverIds = message.topicId.split('_');
-        let senderId = message.user.id + '';
+        let senderId = message.senderId + '';
         console.log('senderId', senderId);
         receiverIds = oReceiverIds.filter(userId => userId !== senderId);
         console.log('receiverIds', receiverIds);
