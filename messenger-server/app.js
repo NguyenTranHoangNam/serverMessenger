@@ -85,6 +85,21 @@ app.post('/getMessageByTopicID',(req,res)=>{
     }
 
 });
+
+//-----get List Friends by userID
+app.post('/getListFriendsByUserId',(req,res)=>{
+    const body = req.body
+    if(body.userID != null){
+        console.log(body)
+        userRepo.getListFriendsByUserId(body.userID).then(response=>{
+            res.send({response:(response)})
+        })
+    }
+    else{
+        res.send({error:'topicID is null'})
+    }
+
+});
 //----upload file
 // app.post("/upload", multer({ dest: "./uploads/" }).array("uploads", 12), function (request, res) {
 //     const req = request.body
