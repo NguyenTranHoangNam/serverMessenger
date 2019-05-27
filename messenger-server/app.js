@@ -127,6 +127,7 @@ io.on('connection', function (socket) {
 
     setInterval(() => socket.emit('time', new Date().toTimeString()), 10000);
 
+    //ok dc r
     //-----ACK-----
     socket.on('ackMessage', function (params) {
         console.log('message: ', params);
@@ -158,7 +159,17 @@ io.on('connection', function (socket) {
         let senderId = message.senderId + '';
         console.log('senderId', senderId);
         receiverIds = oReceiverIds.filter(userId => userId !== senderId);
-        console.log('receiverIds', receiverIds);
+        console.log('receiverIds', receiverIds[0]);
+        userRepo.getRelationByFriendIdAndUserId(receiverIds,senderId).then(res=>{
+            if(res.length == 0){
+                userRepo.insertUserAndFriendByID(receiverIds,senderId)
+                userRepo.insertUserAndFriendByID(senderId,receiverIds)
+            }
+            else{
+                console.log('Relationship')
+            }
+        })
+
         let topicUsers = [];
         var promises = oReceiverIds.map((receiverId) => {
             return userRepo.searchUserById(parseInt(receiverId))
