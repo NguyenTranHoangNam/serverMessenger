@@ -186,67 +186,51 @@ io.on('connection', function (socket) {
             }
         })
 
-        let topicUsers = [];
-        var promises = oReceiverIds.map((receiverId) => {
-            return userRepo.searchUserById(parseInt(receiverId))
-                .then(value => {
-                    return value[0].fullname;
+        let lastMess = message.content;
+        if (message.type === 5){
+            lastMess = "Tập tin";
+        }
+        if (message.type === 2){
+            lastMess = "Hình ảnh"
+        }
+        let topic = {
+            name: JSON.parse(message.topicName),
+            lastMess: lastMess,
+            sendTime: message.sendTime,
+            topicId: message.topicId,
+            hasNewMessage: 1
+        }
+
+        chatRepo.getTopic(message.topicId).then(res=>{
+            if(res.length == 0){
+                chatRepo.insertTopicIfFirstChat(topic)
+                .then(res=>{
+                    console.log('insert topic success')
+                }).catch(err=>{
+                    console.log({'Error':err})
                 })
-                .catch(err => {
-                    console.log(err);
-                    res.statusCode = 500;
-                    res.end('View error log on server console');
+            }
+            else{
+                chatRepo.updateTopic(message.topicId, lastMess)
+                .then(res=>{
+                    console.log('update topic success')
+                }).catch(err=>{
+                    console.log({'Error':err})
                 })
-        });
-        Promise.all(promises).then(function (results) {
-            console.log('results', results);
+            }
+        })
+
+        console.log('Gửi topic đến người gửi', senderSocketId);
+        io.sockets.emit('TOPIC_FROM_SERVER', JSON.stringify(topic), senderId);
+        receiverIds.map(receiverId => {
+            let receiver = users.filter(user => user.userId + '' === receiverId)[0];
             //Gửi topic đến client
-            let lastMess = message.content;
-            if (message.type === 5){
-                lastMess = "Tập tin";
-            }
-            if (message.type === 2){
-                lastMess = "Hình ảnh"
-            }
-            let topic = {
-                name: results,
-                lastMess: lastMess,
-                sendTime: message.sendTime,
-                topicId: message.topicId,
-                hasNewMessage: 1
-            }
-
-            chatRepo.getTopic(message.topicId).then(res=>{
-                if(res.length == 0){
-                    chatRepo.insertTopicIfFirstChat(topic)
-                    .then(res=>{
-                        console.log('insert topic success')
-                    }).catch(err=>{
-                        console.log({'Error':err})
-                    })
-                }
-                else{
-                    chatRepo.updateTopic(message.topicId, lastMess)
-                    .then(res=>{
-                        console.log('update topic success')
-                    }).catch(err=>{
-                        console.log({'Error':err})
-                    })
-                }
-            })
-
-            console.log('Gửi topic đến người gửi', senderSocketId);
-            io.sockets.emit('TOPIC_FROM_SERVER', JSON.stringify(topic), senderId);
-            receiverIds.map(receiverId => {
-                let receiver = users.filter(user => user.userId + '' === receiverId)[0];
-                //Gửi topic đến client
+            try {   
                 console.log('Gửi topic đến client', receiver.socketId);
-                try {   
-                    io.sockets.emit('TOPIC_FROM_SERVER', JSON.stringify(topic), receiverId);
-                } catch (error) {
-                    console.log('TOPIC_FROM_SERVER', error) 
-                }
-            })
+                io.sockets.emit('TOPIC_FROM_SERVER', JSON.stringify(topic), receiverId);
+            } catch (error) {
+                console.log('TOPIC_FROM_SERVER', error) 
+            }
         })
 
         if (message.type === 5) {
