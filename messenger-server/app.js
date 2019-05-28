@@ -217,11 +217,48 @@ io.on('connection', function (socket) {
             }
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
+                //Gửi topic đến client
+                let lastMess = message.content;
+                if (message.type === 5){
+                    lastMess = "Tập tin";
+                }
+                if (message.type === 2){
+                    lastMess = "Hình ảnh"
+                }
+                let topic = {
+                    name: JSON.stringify(results),
+                    lastMess: lastMess,
+                    sendTime: message.sendTime,
+                    topicId: message.topicId,
+                    hasNewMessage: 1
+                }
+                chatRepo.getTopic(message.topicId).then(res=>{
+                    if(res.length == 0){
+                        chatRepo.insertTopicIfFirstChat(topic)
+                        .then(res=>{
+                            console.log('insert topic success')
+                            chatRepo.insertMessage(message).then(res=>{
+                                console.log('insert message success')
+                            }).catch(err=>{
+                                console.log(`insert message: ${err}`) 
+                            })
+                        }).catch(err=>{
+                            console.log({'Error':err})
+                        })
+                    }
+                    else{
+                        chatRepo.insertMessage(message).then(res=>{
+                            console.log('insert message success')
+                        }).catch(err=>{
+                            console.log(`insert message: ${err}`) 
+                        })
+                    }
+                })
                 try {   
                     topic.name = JSON.parse(topic.name);
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
-                    console.log('TOPIC_FROM_SERVER', error) 
+                    // console.log('TOPIC_FROM_SERVER', error) 
                 }
             })
             io.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
@@ -246,7 +283,7 @@ io.on('connection', function (socket) {
             try {     
                 io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg, message.type);
             } catch (error) {
-                console.log('MESSAGE_FROM_SERVER', error) 
+                // console.log('MESSAGE_FROM_SERVER', error) 
             }
         })
     });
