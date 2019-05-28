@@ -235,17 +235,18 @@ io.on('connection', function (socket) {
                 }
             })
 
+            console.log('Gửi topic đến người gửi', senderSocketId);
+            io.sockets.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
                 //Gửi topic đến client
                 console.log('Gửi topic đến client', receiver.socketId);
                 try {   
-                    socket.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
+                    io.sockets.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
                     console.log('TOPIC_FROM_SERVER', error) 
                 }
             })
-            socket.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
         })
 
         if (message.type === 5) {
