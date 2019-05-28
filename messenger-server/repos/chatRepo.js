@@ -16,8 +16,8 @@ exports.getTopic = function(topicId){
 }
 
 exports.insertMessage = function(message){
-    var sql = `insert into message(topicId, sendTime, status, senderId, content) values('${message.topicId}', '${message.sendTime}', '1', '${message.senderId}', '${message.content}', )`;
-    return db.write(sql);
+    var sql = `insert into message(topicId, sendTime, status, senderId, content) values('${message.topicId}', '${message.sendTime}', '1', '${message.senderId}', '${message.content}')`;
+    return db.load(sql);
 }
 
 exports.getTopicByUserID = function(userId){
@@ -28,4 +28,8 @@ exports.getTopicByUserID = function(userId){
 exports.getMessageByTopicID = function(topicId){
     var sql = `SELECT * from message m where m.topicId = '${topicId}'`
 	return db.load(sql);
+}
+exports.insertTopicIfFirstChat = function(topic){
+    var sql = `insert into topic(topicId, lastMess, sendTime,name, hasNewMessage) values('${topic.topicId}', '${topic.lastMess}', '${topic.sendTime}', '${topic.name}','${topic.hasNewMessage}')`;
+    return db.load(sql);
 }

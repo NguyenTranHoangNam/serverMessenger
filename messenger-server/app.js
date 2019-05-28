@@ -216,11 +216,33 @@ io.on('connection', function (socket) {
                     topicId: message.topicId,
                     hasNewMessage: 1
                 }
+                chatRepo.getTopic(message.topicId).then(res=>{
+                    if(res.length == 0){
+                        chatRepo.insertTopicIfFirstChat(topic)
+                        .then(res=>{
+                            console.log('insert topic success')
+                            chatRepo.insertMessage(message).then(res=>{
+                                console.log('insert message success')
+                            }).catch(err=>{
+                                console.log(`insert message: ${err}`) 
+                            })
+                        }).catch(err=>{
+                            console.log({'Error':err})
+                        })
+                    }
+                    else{
+                        chatRepo.insertMessage(message).then(res=>{
+                            console.log('insert message success')
+                        }).catch(err=>{
+                            console.log(`insert message: ${err}`) 
+                        })
+                    }
+                })
                 try {   
                     topic.name = JSON.parse(topic.name);
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
-                    console.log('TOPIC_FROM_SERVER', error) 
+                    // console.log('TOPIC_FROM_SERVER', error) 
                 }
             })
         })
@@ -244,7 +266,7 @@ io.on('connection', function (socket) {
             try {     
                 io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg, message.type);
             } catch (error) {
-                console.log('MESSAGE_FROM_SERVER', error) 
+                // console.log('MESSAGE_FROM_SERVER', error) 
             }
         })
     });
