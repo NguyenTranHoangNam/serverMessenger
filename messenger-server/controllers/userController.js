@@ -23,7 +23,7 @@ router.post('/login', (req, res) => {
                     returnCode: returnCode,
                     message: message,
                     user: {
-                        name: user.fullname,
+                        fullname: user.fullname,
                         id: user.id,
                         avatar: user.avatar,
                     }
@@ -82,7 +82,7 @@ router.post('/searchUser', (req, res) => {
         var users = [];
         value.map(user => {
             let u = {
-                name: user.fullname,
+                fullname: user.fullname,
                 id: user.id,
                 avatar: user.avatar,
             }

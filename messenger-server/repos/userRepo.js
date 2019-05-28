@@ -32,6 +32,6 @@ exports.getRelationByFriendIdAndUserId = function(userID,friendID) {
 }
 
 exports.getListFriendsByUserId = function(userID) {
-    var sql = `SELECT * from friends, user WHERE friends.user = '${userID}' and user.id = friends.friend_id`;
+    var sql = `SELECT user.fullname, user.id, user.avatar from friends, user WHERE friends.user = '${userID}' and user.id = friends.friend_id`;
     return db.load(sql);
 }

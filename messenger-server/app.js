@@ -173,6 +173,7 @@ io.on('connection', function (socket) {
         let oReceiverIds = message.topicId.split('_');
         let senderId = message.senderId + '';
         console.log('senderId', senderId);
+        senderSocketId = users.filter(user => user.userId + '' === senderId)[0].socketId;
         receiverIds = oReceiverIds.filter(userId => userId !== senderId);
         console.log('receiverIds', receiverIds[0]);
         userRepo.getRelationByFriendIdAndUserId(receiverIds,senderId).then(res=>{
@@ -199,23 +200,23 @@ io.on('connection', function (socket) {
         });
         Promise.all(promises).then(function (results) {
             console.log('results', results);
+            //Gửi topic đến client
+            let lastMess = message.content;
+            if (message.type === 5){
+                lastMess = "Tập tin";
+            }
+            if (message.type === 2){
+                lastMess = "Hình ảnh"
+            }
+            let topic = {
+                name: JSON.stringify(results),
+                lastMess: lastMess,
+                sendTime: message.sendTime,
+                topicId: message.topicId,
+                hasNewMessage: 1
+            }
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
-                //Gửi topic đến client
-                let lastMess = message.content;
-                if (message.type === 5){
-                    lastMess = "Tập tin";
-                }
-                if (message.type === 2){
-                    lastMess = "Hình ảnh"
-                }
-                let topic = {
-                    name: JSON.stringify(results),
-                    lastMess: lastMess,
-                    sendTime: message.sendTime,
-                    topicId: message.topicId,
-                    hasNewMessage: 1
-                }
                 try {   
                     topic.name = JSON.parse(topic.name);
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
@@ -223,6 +224,7 @@ io.on('connection', function (socket) {
                     console.log('TOPIC_FROM_SERVER', error) 
                 }
             })
+            io.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
         })
 
         if (message.type === 5) {
