@@ -258,7 +258,7 @@ io.on('connection', function (socket) {
             let photoName = new Date().getTime().toString() + ".jpg";
             uploadFile(photoName, message.content);
             message.content = "";
-            message['photoURL'] = "http://localhost:3000/" + photoName;
+            message['photoURL'] = "https://lkhmessenger.herokuapp.com/" + photoName;
             console.log('message photo', message);
         }
 
