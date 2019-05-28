@@ -240,12 +240,12 @@ io.on('connection', function (socket) {
                 //Gửi topic đến client
                 console.log('Gửi topic đến client', receiver.socketId);
                 try {   
-                    io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
+                    socket.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
                     console.log('TOPIC_FROM_SERVER', error) 
                 }
             })
-            io.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
+            socket.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
         })
 
         if (message.type === 5) {
