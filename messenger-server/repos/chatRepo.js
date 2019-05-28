@@ -15,8 +15,13 @@ exports.getTopic = function(topicId){
 	return db.load(sql);
 }
 
+exports.updateTopic = function(topicId, lastMess){
+    var sql = "update topic set lastMess = '" + lastMess + "' where topicId = '" + topicId + "'";
+    return db.load(sql);
+}
+
 exports.insertMessage = function(message){
-    var sql = `insert into message(topicId, sendTime, status, senderId, content) values('${message.topicId}', '${message.sendTime}', '1', '${message.senderId}', '${message.content}')`;
+    var sql = `insert into message(topicId, sendTime, status, senderId, content, photoURL, downloadURL, filename, type) values('${message.topicId}', '${message.sendTime}', '1', '${message.senderId}', '${message.content}', '${message.photoURL}', '${message.downloadURL}', '${message.filename}', '${message.type}')`;
     return db.load(sql);
 }
 
@@ -30,6 +35,7 @@ exports.getMessageByTopicID = function(topicId){
 	return db.load(sql);
 }
 exports.insertTopicIfFirstChat = function(topic){
+    topic.name = JSON.stringify(topic.name);
     var sql = `insert into topic(topicId, lastMess, sendTime,name, hasNewMessage) values('${topic.topicId}', '${topic.lastMess}', '${topic.sendTime}', '${topic.name}','${topic.hasNewMessage}')`;
     return db.load(sql);
 }
