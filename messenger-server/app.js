@@ -234,12 +234,6 @@ io.on('connection', function (socket) {
                         }).catch(err=>{
                             console.log({'Error':err})
                         })
-
-                        chatRepo.insertMessage(message).then(res=>{
-                            console.log('insert message success')
-                        }).catch(err=>{
-                            console.log(`insert message: ${err}`) 
-                        })
                     }
                 })
                 try {   
