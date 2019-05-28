@@ -238,6 +238,7 @@ io.on('connection', function (socket) {
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
                 //Gửi topic đến client
+                console.log('Gửi topic đến client', receiver.socketId);
                 try {   
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
