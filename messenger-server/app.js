@@ -215,27 +215,29 @@ io.on('connection', function (socket) {
                 topicId: message.topicId,
                 hasNewMessage: 1
             }
+
+            chatRepo.getTopic(message.topicId).then(res=>{
+                if(res.length == 0){
+                    chatRepo.insertTopicIfFirstChat(topic)
+                    .then(res=>{
+                        console.log('insert topic success')
+                    }).catch(err=>{
+                        console.log({'Error':err})
+                    })
+                }
+                else{
+                    chatRepo.updateTopic(message.topicId, lastMess)
+                    .then(res=>{
+                        console.log('update topic success')
+                    }).catch(err=>{
+                        console.log({'Error':err})
+                    })
+                }
+            })
+
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
                 //Gửi topic đến client
-                chatRepo.getTopic(message.topicId).then(res=>{
-                    if(res.length == 0){
-                        chatRepo.insertTopicIfFirstChat(topic)
-                        .then(res=>{
-                            console.log('insert topic success')
-                        }).catch(err=>{
-                            console.log({'Error':err})
-                        })
-                    }
-                    else{
-                        chatRepo.updateTopic(message.topicId, lastMess)
-                        .then(res=>{
-                            console.log('update topic success')
-                        }).catch(err=>{
-                            console.log({'Error':err})
-                        })
-                    }
-                })
                 try {   
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
