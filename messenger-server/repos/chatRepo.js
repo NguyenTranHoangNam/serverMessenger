@@ -26,12 +26,12 @@ exports.insertMessage = function(message){
 }
 
 exports.getTopicByUserID = function(userId){
-    var sql = `select * from topic t`
+    var sql = `select * from topic t where t.topicId like '%${userId}%'`
 	return db.load(sql);
 }
 
 exports.getMessageByTopicID = function(topicId){
-    var sql = `SELECT * from message m where m.topicId = '${topicId}'`
+    var sql = `SELECT m.*, u.avatar from message m, user u where m.topicId = '${topicId}' and m.senderId = u.id`
 	return db.load(sql);
 }
 exports.insertTopicIfFirstChat = function(topic){

@@ -258,25 +258,6 @@ io.on('connection', function (socket) {
             io.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
         })
 
-        if (message.type === 5) {
-            uploadFile(message.filename, message.content);
-            message.content = "";
-            console.log('message file', message);
-        }
-        if (message.type === 2) {
-            let photoName = new Date().getTime().toString() + ".jpg";
-            uploadFile(photoName, message.content);
-            message.content = "";
-            message['photoURL'] = "https://lkhmessenger.herokuapp.com/" + photoName;
-            console.log('message photo', message);
-        }
-
-        chatRepo.insertMessage(message).then(res => {
-            console.log('insert message success')
-        }).catch(err => {
-            console.log(`insert message: ${err}`)
-        })
-
         receiverIds.map(receiverId => {
             let receiver = users.filter(user => user.userId + '' === receiverId)[0];
             //Gửi tin nhắn đến client
