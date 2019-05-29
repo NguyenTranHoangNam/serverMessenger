@@ -35,3 +35,13 @@ exports.getListFriendsByUserId = function(userID) {
     var sql = `SELECT user.fullname, user.id, user.avatar from friends, user WHERE friends.user = '${userID}' and user.id = friends.friend_id`;
     return db.load(sql);
 }
+
+exports.registerUser = function(user) {
+    var sql = `INSERT INTO user(email,password,fullname,avatar) VALUES('${user.email}','${user.password}','${user.fullname}','${user.avatar}')`;
+    return db.load(sql);
+}
+
+exports.searchEmail = function(email) {
+    var sql = `SELECT * FROM user u WHERE u.email = '${email}'`;
+    return db.load(sql);
+}

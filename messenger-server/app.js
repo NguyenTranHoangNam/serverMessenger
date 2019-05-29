@@ -107,6 +107,48 @@ app.post('/getListFriendsByUserId', (req, res) => {
     }
 
 });
+
+//-----Register
+app.post('/register',(req,res)=>{
+    const body = req.body
+    if(body != null){
+        
+        userRepo.searchEmail(body.email).then(respon=>{
+            if(respon.length == 0){
+                const user = {
+                    email:body.email,
+                    password:body.password,
+                    fullname:body.fullname,
+                    avatar:'https://sm.ign.com/t/ign_in/screenshot/i/iron-man/iron-man_aw54.640.jpg'
+                }
+                userRepo.registerUser(user).then(ressponse=>{
+                    res.send({
+                        result:1
+                    })
+                }).catch(err=>{
+                    res.send({
+                        result:0
+                    })
+                    console.log(`register err: ${err}`)
+                })
+            }
+            else{
+                res.send({
+                    result:0,
+                    msg:"Email đã được tạo"
+                })
+            }
+        }).catch(err=>{
+            console.log(`err ${err}`)
+        })
+       
+
+    }
+    else{
+        res.send({error:'topicID is null'})
+    }
+
+});
 //----upload file
 // app.post("/upload", multer({ dest: "./uploads/" }).array("uploads", 12), function (request, res) {
 //     const req = request.body
