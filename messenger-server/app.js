@@ -43,60 +43,60 @@ app.use('/user', userCtrl);
 app.use('/chat', chatCtrl);
 
 // define a route to download a file 
-app.get('/download/:file(*)',(req, res) => {
+app.get('/download/:file(*)', (req, res) => {
     console.log(req);
     var file = req.params.file;
-    var fileLocation = path.join('./uploads',file);
+    var fileLocation = path.join('./uploads', file);
     console.log(fileLocation);
-    res.download(fileLocation, file); 
+    res.download(fileLocation, file);
 });
 
 //-----get Topic by userID
-app.post('/getTopicByUserID',(req,res)=>{
+app.post('/getTopicByUserID', (req, res) => {
     const body = req.body
-    if(body.userID != null){
-        chatRepo.getTopicByUserID(body.userID).then(response=>{
-            response.map(topic=>{
+    if (body.userID != null) {
+        chatRepo.getTopicByUserID(body.userID).then(response => {
+            response.map(topic => {
                 topic.name = JSON.parse(topic.name)
             })
-            res.send({response:(response)})
+            res.send({ response: (response) })
         })
     }
-    else{
-        res.send({error:'userID is null'})
+    else {
+        res.send({ error: 'userID is null' })
     }
 
 });
 //-----get Message by TopicID
-app.post('/getMessageByTopicID',(req,res)=>{
+app.post('/getMessageByTopicID', (req, res) => {
     const body = req.body
-    if(body.topicID != null){
+    if (body.topicID != null) {
         console.log(body)
-        chatRepo.getMessageByTopicID(body.topicID).then(response=>{
+        chatRepo.getMessageByTopicID(body.topicID).then(response => {
 
             // response.map(topic=>{
             //     topic.name = JSON.parse(topic.name)
             // })
-            res.send({response:(response)})
+            res.send({ response: (response) })
         })
     }
-    else{
-        res.send({error:'topicID is null'})
+    else {
+        res.send({ error: 'topicID is null' })
     }
 
 });
 
 //-----get List Friends by userID
-app.post('/getListFriendsByUserId',(req,res)=>{
+app.post('/getListFriendsByUserId', (req, res) => {
     const body = req.body
-    if(body.userID != null){
+    if (body.userID != null) {
         console.log(body)
-        userRepo.getListFriendsByUserId(body.userID).then(response=>{
-            res.send({response:(response)})
+        userRepo.getListFriendsByUserId(body.userID).then(response => {
+            res.send({ response: (response) })
         })
     }
-    else{
-        res.send({error:'topicID is null'})
+    else {
+        res.send({ error: 'topicID is null' })
     }
 
 });
@@ -176,36 +176,50 @@ io.on('connection', function (socket) {
         senderSocketId = users.filter(user => user.userId + '' === senderId)[0].socketId;
         receiverIds = oReceiverIds.filter(userId => userId !== senderId);
         console.log('receiverIds', receiverIds[0]);
-        userRepo.getRelationByFriendIdAndUserId(receiverIds,senderId).then(res=>{
-            if(res.length == 0){
-                userRepo.insertUserAndFriendByID(receiverIds,senderId)
-                userRepo.insertUserAndFriendByID(senderId,receiverIds)
+        userRepo.getRelationByFriendIdAndUserId(receiverIds, senderId).then(res => {
+            if (res.length == 0) {
+                userRepo.insertUserAndFriendByID(receiverIds, senderId)
+                userRepo.insertUserAndFriendByID(senderId, receiverIds)
             }
-            else{
+            else {
                 console.log('Relationship')
             }
         })
 
-        let topicUsers = [];
-        var promises = oReceiverIds.map((receiverId) => {
-            return userRepo.searchUserById(parseInt(receiverId))
-                .then(value => {
-                    return value[0].fullname;
-                })
-                .catch(err => {
-                    console.log(err);
-                    res.statusCode = 500;
-                    res.end('View error log on server console');
-                })
+        let lastMess = message.content;
+        if (message.type === 5) {
+            lastMess = "Tập tin";
+        }
+        if (message.type === 2) {
+            lastMess = "Hình ảnh"
+        }
+        let topic = {
+            name: JSON.parse(message.topicName),
+            lastMess: lastMess,
+            sendTime: message.sendTime,
+            topicId: message.topicId,
+            hasNewMessage: 1
+        }
+
+        chatRepo.getTopic(message.topicId).then(res => {
+            if (res.length == 0) {
+                chatRepo.insertTopicIfFirstChat(topic)
+                    .then(res => {
+                        console.log('insert topic success')
+                    }).catch(err => {
+                        console.log({ 'Error': err })
+                    })
+            }
         });
+
         Promise.all(promises).then(function (results) {
             console.log('results', results);
             //Gửi topic đến client
             let lastMess = message.content;
-            if (message.type === 5){
+            if (message.type === 5) {
                 lastMess = "Tập tin";
             }
-            if (message.type === 2){
+            if (message.type === 2) {
                 lastMess = "Hình ảnh"
             }
             let topic = {
@@ -218,34 +232,34 @@ io.on('connection', function (socket) {
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
                 //Gửi topic đến client
-                chatRepo.getTopic(message.topicId).then(res=>{
-                    if(res.length == 0){
+                chatRepo.getTopic(message.topicId).then(res => {
+                    if (res.length == 0) {
                         chatRepo.insertTopicIfFirstChat(topic)
-                        .then(res=>{
-                            console.log('insert topic success')
-                        }).catch(err=>{
-                            console.log({'Error':err})
-                        })
+                            .then(res => {
+                                console.log('insert topic success')
+                            }).catch(err => {
+                                console.log({ 'Error': err })
+                            })
                     }
-                    else{
+                    else {
                         chatRepo.updateTopic(message.topicId, lastMess)
-                        .then(res=>{
-                            console.log('update topic success')
-                        }).catch(err=>{
-                            console.log({'Error':err})
-                        })
+                            .then(res => {
+                                console.log('update topic success')
+                            }).catch(err => {
+                                console.log({ 'Error': err })
+                            })
 
-                        chatRepo.insertMessage(message).then(res=>{
+                        chatRepo.insertMessage(message).then(res => {
                             console.log('insert message success')
-                        }).catch(err=>{
-                            console.log(`insert message: ${err}`) 
+                        }).catch(err => {
+                            console.log(`insert message: ${err}`)
                         })
                     }
                 })
-                try {   
+                try {
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
-                    console.log('TOPIC_FROM_SERVER', error) 
+                    console.log('TOPIC_FROM_SERVER', error)
                 }
             })
             io.to(senderSocketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
@@ -260,20 +274,20 @@ io.on('connection', function (socket) {
             let photoName = new Date().getTime().toString() + ".jpg";
             uploadFile(photoName, message.content);
             message.content = "";
-            message['photoURL'] = "http://localhost:3000/" + photoName;
+            message['photoURL'] = "https://lkhmessenger.herokuapp.com/" + photoName;
             console.log('message photo', message);
         }
 
-        chatRepo.insertMessage(message).then(res=>{
+        chatRepo.insertMessage(message).then(res => {
             console.log('insert message success')
-        }).catch(err=>{
-            console.log(`insert message: ${err}`) 
+        }).catch(err => {
+            console.log(`insert message: ${err}`)
         })
 
         receiverIds.map(receiverId => {
             let receiver = users.filter(user => user.userId + '' === receiverId)[0];
             //Gửi tin nhắn đến client
-            try {     
+            try {
                 io.to(receiver.socketId).emit('MESSAGE_FROM_SERVER', msg, message.type);
             } catch (error) {
                 // console.log('MESSAGE_FROM_SERVER', error) 
