@@ -59,8 +59,8 @@ app.post('/getTopicByUserID', (req, res) => {
             let topicByUserID = [];
             response.map(topic => {
                 let topicID = topic.topicId.split("_");
-                for (var i = 0; i < topicID.length; i++){
-                    if (topicID[i] === body.userID + ""){
+                for (var i = 0; i < topicID.length; i++) {
+                    if (topicID[i] === body.userID + "") {
                         topic.name = JSON.parse(topic.name)
                         topicByUserID.push(topic);
                     }
@@ -109,43 +109,45 @@ app.post('/getListFriendsByUserId', (req, res) => {
 });
 
 //-----Register
-app.post('/register',(req,res)=>{
+app.post('/register', (req, res) => {
     const body = req.body
-    if(body != null){
-        
-        userRepo.searchEmail(body.email).then(respon=>{
-            if(respon.length == 0){
+    if (body != null) {
+
+        userRepo.searchEmail(body.email).then(respon => {
+            if (respon.length == 0) {
                 const user = {
-                    email:body.email,
-                    password:body.password,
-                    fullname:body.fullname,
-                    avatar:'https://sm.ign.com/t/ign_in/screenshot/i/iron-man/iron-man_aw54.640.jpg'
+                    email: body.email,
+                    password: body.password,
+                    fullname: body.fullname,
+                    avatar: ''
                 }
-                userRepo.registerUser(user).then(ressponse=>{
+                userRepo.registerUser(user).then(ressponse => {
                     res.send({
-                        result:1
+                        result: 1,
+                        msg: "Thành công"
                     })
-                }).catch(err=>{
+                }).catch(err => {
                     res.send({
-                        result:0
+                        result: 0,
+                        msg: "Đăng ký lỗi, xin vui lòng thử lại sau."
                     })
                     console.log(`register err: ${err}`)
                 })
             }
-            else{
+            else {
                 res.send({
-                    result:0,
-                    msg:"Email đã được tạo"
+                    result: 0,
+                    msg: "Email đã được đăng ký"
                 })
             }
-        }).catch(err=>{
+        }).catch(err => {
             console.log(`err ${err}`)
         })
-       
+
 
     }
-    else{
-        res.send({error:'topicID is null'})
+    else {
+        res.send({ error: 'topicID is null' })
     }
 
 });
@@ -290,10 +292,10 @@ io.on('connection', function (socket) {
                     })
                 }
             })
-            
+
             receiverIds.map(receiverId => {
                 let receiver = users.filter(user => user.userId + '' === receiverId)[0];
-                
+
                 try {
                     io.to(receiver.socketId).emit('TOPIC_FROM_SERVER', JSON.stringify(topic));
                 } catch (error) {
