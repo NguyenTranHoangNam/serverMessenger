@@ -55,11 +55,18 @@ app.get('/download/:file(*)', (req, res) => {
 app.post('/getTopicByUserID', (req, res) => {
     const body = req.body
     if (body.userID != null) {
-        chatRepo.getTopicByUserID(body.userID).then(response => {
+        chatRepo.getListTopic().then(response => {
+            let topicByUserID = [];
             response.map(topic => {
-                topic.name = JSON.parse(topic.name)
+                let topicID = topic.topicId.split("_");
+                for (var i = 0; i < topicID.length; i++){
+                    if (topicID[i] === body.userID + ""){
+                        topic.name = JSON.parse(topic.name)
+                        topicByUserID.push(topic);
+                    }
+                }
             })
-            res.send({ response: (response) })
+            res.send({ response: (topicByUserID) })
         })
     }
     else {

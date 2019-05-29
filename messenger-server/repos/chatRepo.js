@@ -26,7 +26,7 @@ exports.insertMessage = function(message){
 }
 
 exports.getTopicByUserID = function(userId){
-    var sql = `select * from topic t where t.topicId like '%${userId}%'`
+    var sql = `select * from topic t`
 	return db.load(sql);
 }
 
