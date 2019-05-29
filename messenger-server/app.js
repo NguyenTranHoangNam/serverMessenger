@@ -186,30 +186,16 @@ io.on('connection', function (socket) {
             }
         })
 
-        let lastMess = message.content;
-        if (message.type === 5) {
-            lastMess = "Tập tin";
-        }
-        if (message.type === 2) {
-            lastMess = "Hình ảnh"
-        }
-        let topic = {
-            name: JSON.parse(message.topicName),
-            lastMess: lastMess,
-            sendTime: message.sendTime,
-            topicId: message.topicId,
-            hasNewMessage: 1
-        }
-
-        chatRepo.getTopic(message.topicId).then(res => {
-            if (res.length == 0) {
-                chatRepo.insertTopicIfFirstChat(topic)
-                    .then(res => {
-                        console.log('insert topic success')
-                    }).catch(err => {
-                        console.log({ 'Error': err })
-                    })
-            }
+        var promises = oReceiverIds.map((receiverId) => {
+            return userRepo.searchUserById(parseInt(receiverId))
+                .then(value => {
+                    return value[0].fullname;
+                })
+                .catch(err => {
+                    console.log(err);
+                    res.statusCode = 500;
+                    res.end('View error log on server console');
+                })
         });
 
         Promise.all(promises).then(function (results) {
