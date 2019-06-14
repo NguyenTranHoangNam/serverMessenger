@@ -111,6 +111,7 @@ app.post('/getListFriendsByUserId', (req, res) => {
 //-----Register
 app.post('/register', (req, res) => {
     const body = req.body
+    console.log('register', body);
     if (body != null) {
 
         userRepo.searchEmail(body.email).then(respon => {
@@ -119,7 +120,7 @@ app.post('/register', (req, res) => {
                     email: body.email,
                     password: body.password,
                     fullname: body.fullname,
-                    avatar: ''
+                    avatar: 'https://sm.ign.com/t/ign_in/screenshot/i/iron-man/iron-man_aw54.640.jpg'
                 }
                 userRepo.registerUser(user).then(ressponse => {
                     res.send({
